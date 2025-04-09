@@ -1,4 +1,6 @@
-﻿namespace Catalog.API.Products.UpdateProduct;
+﻿using Catalog.API.Products.UpdateProductById;
+
+namespace Catalog.API.Products.UpdateProduct;
 
 public record UpdateProductRequest ( Guid Id , string Name , string Description , decimal Price , string ImageUrl , List<string> Category ) : ICommand<UpdateProductResponse>;
 public record UpdateProductResponse ( bool IsSuccess );

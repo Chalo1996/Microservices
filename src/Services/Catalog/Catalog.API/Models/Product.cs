@@ -9,4 +9,3 @@ public class Product
     public required string ImageFile { get; set; }
     public decimal Price { get; set; }
 }
-

@@ -1,23 +1,28 @@
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder ( args );
 
 // Register services to the dependency injection container
-builder.Services.AddCarter();
-builder.Services.AddMediatR(config =>
+// MediatR Configuration (Fixed)
+builder.Services.AddMediatR ( config =>
 {
-    config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-});
-builder.Services.AddMarten(opts =>
-    opts.Connection(builder.Configuration.GetConnectionString("CatalogConnection"))
-).UseLightweightSessions();
+    config.RegisterServicesFromAssembly ( Assembly.GetExecutingAssembly ( ) );
+} );
+builder.Services.AddTransient ( typeof ( IPipelineBehavior<,> ) , typeof ( ValidationBehaviors<,> ) );
 
-builder.AddServiceDefaults();
-var app = builder.Build();
+builder.Services.AddValidatorsFromAssembly ( Assembly.GetExecutingAssembly ( ) );
 
-app.MapDefaultEndpoints();
+builder.Services.AddCarter ( );
+builder.Services.AddMarten ( opts =>
+    opts.Connection ( builder.Configuration.GetConnectionString ( "CatalogConnection" ) )
+).UseLightweightSessions ( );
 
-app.MapGet("/" , () => "Hello World!");
+builder.Services.AddExceptionHandler<CustomExceptionHandler> ( );
 
-// Configure the HTTP request pipeline
-app.MapCarter();
+builder.AddServiceDefaults ( );
+var app = builder.Build ( );
 
-app.Run();
+app.UseExceptionHandler ( opts => { } );
+app.MapDefaultEndpoints ( );
+app.MapCarter ( );
+app.MapGet ( "/" , ( ) => "Hello World!" );
+
+app.Run ( );

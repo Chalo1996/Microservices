@@ -1,7 +1,27 @@
 ﻿namespace Catalog.API.Products.DeleteProduct;
 
-public record DeleteProductCommand ( Guid Id ) : ICommand<DeleteProductResult>;
-public record DeleteProductResult ( bool IsSuccess );
+public record class DeleteProductCommandRequestDTO
+{
+    public Guid Id { get; set; }
+}
+
+public record class DeleteProductCommandResponseDTO
+{
+    public bool IsSuccess { get; set; }
+}
+
+public record DeleteProductCommand : DeleteProductCommandRequestDTO, ICommand<DeleteProductResult>;
+public record DeleteProductResult : DeleteProductCommandResponseDTO;
+
+public class DeleteProductCommandValidator : AbstractValidator<DeleteProductCommand>
+{
+    public DeleteProductCommandValidator ( )
+    {
+        RuleFor ( x => x.Id )
+            .NotEmpty ( )
+            .WithMessage ( "Product id is required" );
+    }
+}
 
 public class DeleteProductCommandHandler ( IDocumentSession session , ILogger<DeleteProductCommandHandler> logger ) : ICommandHandler<DeleteProductCommand , DeleteProductResult>
 {
@@ -16,7 +36,7 @@ public class DeleteProductCommandHandler ( IDocumentSession session , ILogger<De
         if ( product == null )
         {
             _logger.LogWarning ( "Product with id {@Id} not found." , command.Id );
-            throw new ProductNotFoundException ( );
+            throw new ProductNotFoundException ( command.Id );
         }
 
         // Delete product entity from database
@@ -24,6 +44,9 @@ public class DeleteProductCommandHandler ( IDocumentSession session , ILogger<De
         await _session.SaveChangesAsync ( cancellationToken );
 
         // Return result
-        return new DeleteProductResult ( true );
+        return new DeleteProductResult
+        {
+            IsSuccess = true
+        };
     }
 }
