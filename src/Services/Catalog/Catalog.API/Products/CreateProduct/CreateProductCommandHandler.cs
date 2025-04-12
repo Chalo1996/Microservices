@@ -1,20 +1,20 @@
 ﻿namespace Catalog.API.Products.CreateProduct;
 
-//public record CreateProductCommandRequestDTO
-//{
-//    public required string Name { get; set; }
-//    public List<string> Category { get; set; } = [ ];
-//    public required string Description { get; set; }
-//    public required string ImageFile { get; set; }
-//    public decimal Price { get; set; }
-//}
+public record CreateProductCommandRequestDTO
+{
+    public required string Name { get; set; }
+    public List<string> Category { get; set; } = [ ];
+    public required string Description { get; set; }
+    public required string ImageFile { get; set; }
+    public decimal Price { get; set; }
+}
 
 public record CreateProductCommandResponseDTO
 {
     public Guid Id { get; set; }
 }
 
-public record CreateProductCommand ( string Name , string Description , List<string> Category , string ImageFile , decimal Price ) : ICommand<CreateProductResult>;
+public record CreateProductCommand : CreateProductCommandRequestDTO, ICommand<CreateProductResult>;
 public record CreateProductResult : CreateProductCommandResponseDTO;
 
 public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
@@ -43,13 +43,11 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
     }
 }
 
-internal class CreateProductCommandHandler ( IDocumentSession session , ILogger<CreateProductCommandHandler> logger ) : ICommandHandler<CreateProductCommand , CreateProductResult>
+internal class CreateProductCommandHandler ( IDocumentSession session ) : ICommandHandler<CreateProductCommand , CreateProductResult>
 {
     private readonly IDocumentSession _session = session;
-    private readonly ILogger<CreateProductCommandHandler> _logger = logger;
     public async Task<CreateProductResult> Handle ( CreateProductCommand command , CancellationToken cancellationToken )
     {
-        _logger.LogInformation ( "Creating product using command {@Command}." , command );
 
         // Create product entity from command
         var product = new Product
@@ -69,8 +67,6 @@ internal class CreateProductCommandHandler ( IDocumentSession session , ILogger<
         {
             Id = product.Id
         };
-
-        _logger.LogInformation ( "Product created with id {Id}." , product.Id );
 
         return result;
     }

@@ -23,21 +23,14 @@ public class DeleteProductCommandValidator : AbstractValidator<DeleteProductComm
     }
 }
 
-public class DeleteProductCommandHandler ( IDocumentSession session , ILogger<DeleteProductCommandHandler> logger ) : ICommandHandler<DeleteProductCommand , DeleteProductResult>
+public class DeleteProductCommandHandler ( IDocumentSession session ) : ICommandHandler<DeleteProductCommand , DeleteProductResult>
 {
     private readonly IDocumentSession _session = session;
-    private readonly ILogger<DeleteProductCommandHandler> _logger = logger;
 
     public async Task<DeleteProductResult> Handle ( DeleteProductCommand command , CancellationToken cancellationToken )
     {
-        _logger.LogInformation ( "Deleting product by id {@Id} using command {@Command}." , command.Id , command );
         // Load product from database
-        var product = await _session.LoadAsync<Product> ( command.Id , cancellationToken );
-        if ( product == null )
-        {
-            _logger.LogWarning ( "Product with id {@Id} not found." , command.Id );
-            throw new ProductNotFoundException ( command.Id );
-        }
+        var product = await _session.LoadAsync<Product> ( command.Id , cancellationToken ) ?? throw new ProductNotFoundException ( command.Id );
 
         // Delete product entity from database
         _session.Delete ( product );

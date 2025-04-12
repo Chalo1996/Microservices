@@ -49,21 +49,13 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
     }
 }
 
-public class UpdateProductByIdCommandHandler ( IDocumentSession session , ILogger<UpdateProductByIdCommandHandler> logger ) : ICommandHandler<UpdateProductCommand , UpdateProductResult>
+public class UpdateProductByIdCommandHandler ( IDocumentSession session ) : ICommandHandler<UpdateProductCommand , UpdateProductResult>
 {
     private readonly IDocumentSession _session = session;
-    private readonly ILogger<UpdateProductByIdCommandHandler> _logger = logger;
     public async Task<UpdateProductResult> Handle ( UpdateProductCommand request , CancellationToken cancellationToken )
     {
-        _logger.LogInformation ( "Updating product by id {@Id} using command {@Command}." , request.Id , request );
         // Load product from database
-        var product = await _session.LoadAsync<Product> ( request.Id , cancellationToken );
-
-        if ( product is null )
-        {
-            _logger.LogWarning ( "Product with id {@Id} not found." , request.Id );
-            throw new ProductNotFoundException ( request.Id );
-        }
+        var product = await _session.LoadAsync<Product> ( request.Id , cancellationToken ) ?? throw new ProductNotFoundException ( request.Id );
 
         // Update product entity from command
         product.Name = request.Name;
@@ -81,8 +73,6 @@ public class UpdateProductByIdCommandHandler ( IDocumentSession session , ILogge
         {
             IsSuccess = true
         };
-
-        _logger.LogInformation ( "Product with id {@Id} updated successfully." , request.Id );
 
         return result;
     }
